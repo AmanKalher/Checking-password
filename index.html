@@ -35,17 +35,20 @@ function sendPassword() {
 
     resultDiv.innerHTML = "<span style='color: #ffcc00;'>Cracking... please wait...</span>";
 
-    // Send the data to your Python Flask backend
-    // Replace with your actual Render URL (keep the /crack at the end)
-const BACKEND_URL = "https://checking-password-kc1v.onrender.com"; 
+    // FIX: Appended /crack to the Render URL so it hits the correct route
+    const BACKEND_URL = "https://onrender.com"; 
 
-fetch(BACKEND_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: password })
-})
-
-    .then(response => response.json())
+    fetch(BACKEND_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: password })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
     .then(data => {
         resultDiv.innerHTML = `
             <span style='color: #00ff00;'>Target Cracked!</span><br><br>
@@ -55,7 +58,8 @@ fetch(BACKEND_URL, {
         `;
     })
     .catch(error => {
-        resultDiv.innerHTML = "<span style='color: #ff4d4d;'>Error connecting to backend.</span>";
+        console.error("Fetch Error:", error);
+        resultDiv.innerHTML = "<span style='color: #ff4d4d;'>Error connecting to backend. If you just opened the site, please wait 1 minute for the free server tier to wake up and try again!</span>";
     });
 }
 </script>
