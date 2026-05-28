@@ -1,28 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Simulator</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #121212; color: white; text-align: center; padding-top: 50px; }
-        .container { max-width: 400px; margin: 0 auto; background: #1e1e1e; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        input { width: 90%; padding: 10px; margin: 10px 0; border: none; border-radius: 4px; font-size: 16px; text-align: center; }
-        button { background: #007ACC; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; width: 95%; }
-        button:hover { background: #005999; }
-        #result { margin-top: 20px; font-size: 16px; font-weight: bold; white-space: pre-line; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <h2>🔐 Password Simulator</h2>
-    <p>Enter a numeric code (length<=5) to test the backend cracker: </p>
-    <input type="password" id="passwordInput" placeholder="Enter password here">
-    <button onclick="sendPassword()">Crack Password</button>
-    <div id="result"></div>
-</div>
-
 <script>
 function sendPassword() {
     let password = document.getElementById("passwordInput").value;
@@ -35,8 +10,8 @@ function sendPassword() {
 
     resultDiv.innerHTML = "<span style='color: #ffcc00;'>Cracking... please wait...</span>";
 
-    // FIX: Appended /crack to the Render URL so it hits the correct route
-    const BACKEND_URL = "https://checking-password-kc1v.onrender.com"; 
+    // Dynamic routing: automatically uses the correct host domain name
+    const BACKEND_URL = window.location.origin + "/crack"; 
 
     fetch(BACKEND_URL, {
         method: 'POST',
@@ -45,11 +20,15 @@ function sendPassword() {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error('Server returned error status');
         }
         return response.json();
     })
     .then(data => {
+        if (data.error) {
+            resultDiv.innerHTML = `<span style='color: #ff4d4d;'>Error: ${data.error}</span>`;
+            return;
+        }
         resultDiv.innerHTML = `
             <span style='color: #00ff00;'>Target Cracked!</span><br><br>
             Found: ${data.guessed_password}<br>
@@ -59,10 +38,7 @@ function sendPassword() {
     })
     .catch(error => {
         console.error("Fetch Error:", error);
-        resultDiv.innerHTML = "<span style='color: #ff4d4d;'>Error connecting to backend. If you just opened the site, please wait 1 minute for the free server tier to wake up and try again!</span>";
+        resultDiv.innerHTML = "<span style='color: #ff4d4d;'>Connection dropped. Please try again in a few seconds!</span>";
     });
 }
 </script>
-
-</body>
-</html>
