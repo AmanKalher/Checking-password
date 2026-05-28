@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import os
 import time
+import random
 
 # This trick forces Flask to use the absolute path of the folder it is currently running in
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -10,14 +11,28 @@ app = Flask(__name__, template_folder=template_dir)
 
 # --- YOUR BACKEND CODE PLACEHOLDER ---
 def your_cracking_function(target_password):
-    start_time = time.time()
-    
-    # Place your actual Python cracking logic here!
-    attempts = len(target_password) * 150 
-    guessed_password = target_password    
-    
-    time_taken = round(time.time() - start_time, 4)
-    return guessed_password, attempts, time_taken
+
+start_time=time.perf_counter()
+
+char="1234567890"
+
+password=input("Type your password : ")
+
+print("\nAccessind database.........\n")
+
+guess=""
+
+while guess!= password:
+    guess = ""
+
+    for i in range(len(password)):
+        guess+=random.choice(char)
+
+    print("\n Trying.....!", guess)
+    time.sleep(0.01)
+
+print("\nPASSWORD CRACKED : ",password)
+
 # -------------------------------------
 
 @app.route('/')
