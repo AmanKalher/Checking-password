@@ -36,11 +36,15 @@ function sendPassword() {
     resultDiv.innerHTML = "<span style='color: #ffcc00;'>Cracking... please wait...</span>";
 
     // Send the data to your Python Flask backend
-    fetch('/crack', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: password })
-    })
+    // Replace with your actual Render URL (keep the /crack at the end)
+const BACKEND_URL = "https://onrender.com"; 
+
+fetch(BACKEND_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: password })
+})
+
     .then(response => response.json())
     .then(data => {
         resultDiv.innerHTML = `
