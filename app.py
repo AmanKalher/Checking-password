@@ -54,4 +54,5 @@ def crack():
 
 if __name__ == '__main__':
     # Using port 5001 in case port 5000 is blocked by your system
-    app.run(debug=True, port=5001)
+    port = int(os.environ.get("PORT",5001))
+    app.run(host="0.0.0.0",port=port)
