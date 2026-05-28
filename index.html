@@ -1,85 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Page Configuration Header -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Password Simulator</title>
-    
-    <!-- Visual Styles (CSS) -->
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            background: #121212; 
-            color: white; 
-            text-align: center; 
-            padding-top: 50px; 
-        }
-        .container { 
-            max-width: 400px; 
-            margin: 0 auto; 
-            background: #1e1e1e; 
-            padding: 30px; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
-        }
-        input { 
-            width: 90%; 
-            padding: 10px; 
-            margin: 10px 0; 
-            border: none; 
-            border-radius: 4px; 
-            font-size: 16px; 
-            text-align: center; 
-            background: #2a2a2a;
-            color: white;
-        }
-        button { 
-            background: #007ACC; 
-            color: white; 
-            border: none; 
-            padding: 10px 20px; 
-            font-size: 16px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            width: 95%; 
-        }
-        button:hover { 
-            background: #005999; 
-        }
-        #result { 
-            margin-top: 20px; 
-            font-size: 16px; 
-            font-weight: bold; 
-            white-space: pre-line; 
-        }
+        body { font-family: sans-serif; background-color: #121212; color: #ffffff; text-align: center; padding: 50px; }
+        .box { background-color: #1e1e1e; max-width: 400px; margin: 0 auto; padding: 30px; border-radius: 8px; border: 1px solid #333; }
+        input { width: 80%; padding: 10px; margin: 10px 0; border-radius: 4px; border: 1px solid #555; text-align: center; }
+        button { background-color: #007ACC; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        #result { margin-top: 20px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <!-- Visual Interface -->
-    <div class="container">
+    <div class="box">
         <h2>🔐 Password Simulator</h2>
-        <p>Enter a numeric code to test the backend cracker:</p>
-        <input type="password" id="passwordInput" placeholder="Enter password here">
+        <p>Enter numeric code:</p>
+        <input type="password" id="passwordInput" placeholder="12345">
+        <br>
         <button onclick="sendPassword()">Crack Password</button>
         <div id="result"></div>
     </div>
 
-    <!-- Application Logic (JavaScript) -->
     <script>
     function sendPassword() {
         let password = document.getElementById("passwordInput").value;
         let resultDiv = document.getElementById("result");
-
         if (!password) {
-            resultDiv.innerHTML = "<span style='color: #ff4d4d;'>Please enter a password!</span>";
+            resultDiv.innerHTML = "<span style='color: red;'>Type a password!</span>";
             return;
         }
+        resultDiv.innerHTML = "<span style='color: orange;'>Processing...</span>";
 
-        resultDiv.innerHTML = "<span style='color: #ffcc00;'>Cracking... please wait...</span>";
-
-        // Dynamic routing: automatically tracks whether you run locally or on Render
         const BACKEND_URL = window.location.origin + "/crack"; 
 
         fetch(BACKEND_URL, {
@@ -87,30 +40,14 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ password: password })
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Server returned an error status');
-            }
-            return response.json();
-        })
+        .then(res => res.json())
         .then(data => {
-            if (data.error) {
-                resultDiv.innerHTML = `<span style='color: #ff4d4d;'>Error: ${data.error}</span>`;
-                return;
-            }
-            resultDiv.innerHTML = `
-                <span style='color: #00ff00;'>Target Cracked!</span><br><br>
-                Found: ${data.guessed_password}<br>
-                Attempts: ${data.attempts}<br>
-                Time taken: ${data.time_taken}s
-            `;
+            resultDiv.innerHTML = `<span style='color: green;'>Cracked!</span><br>Found: ${data.guessed_password}<br>Attempts: ${data.attempts}`;
         })
-        .catch(error => {
-            console.error("Fetch Error:", error);
-            resultDiv.innerHTML = "<span style='color: #ff4d4d;'>Connection dropped. Please click crack again!</span>";
+        .catch(err => {
+            resultDiv.innerHTML = "<span style='color: red;'>Error connecting.</span>";
         });
     }
     </script>
-
 </body>
 </html>
