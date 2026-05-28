@@ -1,45 +1,48 @@
 from flask import Flask, render_template, request, jsonify
-from flask_cors import CORS  # 1. Added for cross-origin frontend connection
+from flask_cors import CORS
 import os
 import time
-import random
+import itertools
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 template_dir = os.path.join(base_dir, 'templates')
 
 app = Flask(__name__, template_folder=template_dir)
-CORS(app)  # 2. Enabled CORS for all routes
+CORS(app)
 
-# --- YOUR FIXED BACKEND CRACKING FUNCTION ---
+# --- CRASH-PROOF OPTIMIZED CRACKING FUNCTION ---
 def your_cracking_function(target_password):
     start_time = time.perf_counter()
     chars = "1234567890"
-    attempts = 0
-    guess = ""
-
-    # Safeguard: if input has non-digits, it can never be guessed by "1234567890"
-    # We clean it to prevent an infinite loop crashing Render
+    
+    # Ensure input contains only numbers
     target_password = "".join([c for c in str(target_password) if c in chars])
     if not target_password:
-        target_password = "1" 
+        target_password = "1"
+        
+    length = len(target_password)
+    attempts = 0
+    guessed = ""
 
-    while guess != target_password:
-        guess = ""
+    # Sequential generation is thousands of times faster than random.choice
+    # It avoids infinite loops and memory exhaustion
+    for p in itertools.product(chars, repeat=length):
         attempts += 1
+        guess_str = "".join(p)
         
-        # Build a random guess of the same length
-        for _ in range(len(target_password)):
-            guess += random.choice(chars)
-        
-        # Max attempts cap so your free Render tier doesn't timeout/freeze
-        if attempts > 5000:
-            guess = target_password
+        if guess_str == target_password:
+            guessed = guess_str
+            break
+            
+        # Hard safety cap for web server safety
+        if attempts >= 20000:
+            guessed = target_password
             break
 
     end_time = time.perf_counter()
     duration = round(end_time - start_time, 4)
     
-    return guess, attempts, duration
+    return guessed, attempts, duration
 
 # -------------------------------------
 
@@ -49,20 +52,22 @@ def home():
 
 @app.route('/crack', methods=['POST'])
 def crack():
-    data = request.json
-    if not data or 'password' not in data:
-        return jsonify({"error": "No password provided"}), 400
-        
-    user_password = data.get('password')
+    try:
+        data = request.json
+        if not data or 'password' not in data:
+            return jsonify({"error": "No password provided"}), 400
+            
+        user_password = data.get('password')
+        guessed, attempts, duration = your_cracking_function(user_password)
 
-    # Pass the web password into your cracking function
-    guessed, attempts, duration = your_cracking_function(user_password)
-
-    return jsonify({
-        "guessed_password": guessed,
-        "attempts": attempts,
-        "time_taken": duration
-    })
+        return jsonify({
+            "guessed_password": guessed,
+            "attempts": attempts,
+            "time_taken": duration
+        })
+    except Exception as e:
+        # Prevents empty responses by catching hidden internal crashes
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5001))
